@@ -1,0 +1,20 @@
+{
+  "name": "html-to-word",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "rimraf dist & tsc"
+  },
+  "devDependencies": {
+    "@types/jsdom": "16.2.10",
+    "@types/node": "15.3.0",
+    "rimraf": "^3.0.2"
+  },
+  "dependencies": {
+    "canvas": "2.8.0",
+    "html-docx-js-typescript": "^0.1.5",
+    "html-to-docx": "^1.2.2",
+    "jsdom": "16.5.3"
+  }
+}
