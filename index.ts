@@ -1,14 +1,14 @@
 import { join } from 'path';
-import * as fs from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { loadImage, createCanvas } from 'canvas';
-import { asBlob } from 'html-docx-js-typescript';
-// import * as HTMLtoDOCX from 'html-to-docx';
+import * as word from 'html-to-docx';
+import * as pdf from 'html-pdf-node';
 
 const basePath = process.cwd().replace('dist', '');
-const output = process.cwd();
+const outputPath = process.cwd();
 
-const htmlTemplate = `
+const HTML_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +22,7 @@ const htmlTemplate = `
       border-collapse: collapse;
     }
     table,
+    table tr,
     table tr th,
     table tr td {
       border: 1px solid #a8aeb2;
@@ -47,10 +48,7 @@ const htmlTemplate = `
 const targetWidth = 595;
 const targetHeight = 842;
 
-function imgZoom(
-    imgWidth: number,
-    imgHeight: number,
-): { width: number; height: number } {
+function imgZoom(imgWidth: number, imgHeight: number): { width: number; height: number } {
     let width: number;
     let height: number;
 
@@ -83,30 +81,24 @@ function imgZoom(
     return { width, height };
 }
 
-async function saveDocx(): Promise<void> {
-    const htmlString = fs.readFileSync(join(basePath, 'assets', 'content.html'), {
-        encoding: 'utf-8',
-    });
-
-    console.log(htmlString);
-
-    const dom = new JSDOM(htmlString);
+async function convertImg(html: string): Promise<string> {
+    const dom = new JSDOM(html);
     const doc = dom.window.document;
 
-    console.log('Converting image to base64');
+    console.log('Converting image file to base64.');
 
     for (const img of doc.querySelectorAll('img')) {
-        const imgPath = join(basePath, img.src);
+        const imgFile = join(basePath, img.src);
 
-        const svg = await loadImage(imgPath);
-        console.log(`The image is width: ${svg.width} height: ${svg.height}`);
+        const svg = await loadImage(imgFile);
+        console.log(`Width: ${svg.width}, Height: ${svg.height}`);
 
         if (svg.width > targetWidth || svg.height > targetHeight) {
+            console.log('The image is out of bounds.');
+
             const { width, height } = imgZoom(svg.width, svg.height);
 
-            console.log(
-                `The image exceeds the specified width and height. Being zoomed, width: ${width}, height: ${height}`,
-            );
+            console.log(`Redrawing image, Width: ${width}, Height: ${height}`);
 
             const canvas = createCanvas(width, height);
             const context = canvas.getContext('2d');
@@ -114,19 +106,49 @@ async function saveDocx(): Promise<void> {
 
             img.src = canvas.toDataURL('image/png');
         } else {
-            const imgBase64 = fs.readFileSync(imgPath, { encoding: 'base64' });
+            const imgBase64 = readFileSync(imgFile, { encoding: 'base64' });
             img.src = `data:image/png;base64,${imgBase64}`;
         }
     }
 
-    const html = htmlTemplate.replace('{htmlContent}', doc.body.innerHTML);
-
-    const data = await asBlob(html);
-    // const data = await HTMLtoDOCX(html, null, {
-    //   table: { row: { cantSplit: true } },
-    // });
-    const filename = join(output, 'file.docx');
-    fs.writeFileSync(filename, data as Buffer);
+    return doc.body.innerHTML;
 }
 
-saveDocx().then();
+async function readHtml(): Promise<string> {
+    let htmlStr = readFileSync(join(basePath, 'assets', 'content.html'), {
+        encoding: 'utf-8',
+    });
+
+    htmlStr = await convertImg(htmlStr);
+
+    return htmlStr;
+}
+
+async function toPdf(): Promise<Buffer> {
+    const htmlContent = await readHtml();
+    const html = HTML_TEMPLATE.replace('{htmlContent}', htmlContent);
+
+    return await pdf.generatePdf(
+        { content: html },
+        { format: 'A4', margin: { top: 40, right: 20, bottom: 40, left: 20 } },
+    );
+}
+
+async function toWord(): Promise<Buffer> {
+    const htmlContent = await readHtml();
+    const html = HTML_TEMPLATE.replace('{htmlContent}', htmlContent);
+
+    return await word(html, null, {
+      table: { row: { cantSplit: true } },
+    });
+}
+
+// 生成 docx 文件
+toWord().then((buff) => {
+    writeFileSync(join(outputPath, 'document.docx'), buff);
+});
+
+// 生成 pdf 文件
+toPdf().then((buff) => {
+    writeFileSync(join(outputPath, 'document.pdf'), buff);
+})

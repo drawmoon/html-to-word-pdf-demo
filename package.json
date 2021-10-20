@@ -1,5 +1,5 @@
 {
-  "name": "html-to-word",
+  "name": "html-to-word-pdf-demo",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "canvas": "2.8.0",
-    "html-docx-js-typescript": "^0.1.5",
-    "html-to-docx": "^1.2.2",
+    "html-pdf-node": "^1.0.7",
+    "html-to-docx": "^1.2.4",
     "jsdom": "16.5.3"
   }
 }
