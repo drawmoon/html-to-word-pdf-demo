@@ -7,7 +7,7 @@
     "build": "rimraf dist & tsc"
   },
   "devDependencies": {
-    "@types/jsdom": "16.2.10",
+    "@types/jsdom": "^16.2.14",
     "@types/node": "15.3.0",
     "rimraf": "^3.0.2"
   },
