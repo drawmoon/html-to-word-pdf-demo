@@ -45,40 +45,37 @@ const HTML_TEMPLATE = `
 </body>
 </html>`;
 
-const targetWidth = 595;
-const targetHeight = 842;
+const expectImageWidth = 595;
+const expectImageHeight = 842;
 
-function imgZoom(imgWidth: number, imgHeight: number): { width: number; height: number } {
-    let width: number;
-    let height: number;
+async function resize(file: string): Promise<string> {
+    const svg = await loadImage(file);
 
-    if (imgWidth > 0 && imgHeight > 0) {
-        //原图片宽高比例 大于 指定的宽高比例，这就说明了原图片的宽度必然 > 高度
-        if (imgWidth / imgHeight >= targetWidth / targetHeight) {
-            if (imgWidth > targetWidth) {
-                width = targetWidth;
-                // 按原图片的比例进行缩放
-                height = (imgHeight * targetWidth) / imgWidth;
-            } else {
-                // 按照图片的大小进行缩放
-                width = imgWidth;
-                height = imgHeight;
-            }
-        } else {
-            // 原图片的高度必然 > 宽度
-            if (imgHeight > targetHeight) {
-                height = targetHeight;
-                // 按原图片的比例进行缩放
-                width = (imgWidth * targetHeight) / imgHeight;
-            } else {
-                // 按原图片的大小进行缩放
-                width = imgWidth;
-                height = imgHeight;
-            }
+    let width = svg.width;
+    let height = svg.height;
+
+    //原图片宽高比例 大于 指定的宽高比例，这就说明了原图片的宽度必然 > 高度
+    if (width / height >= expectImageWidth / expectImageHeight) {
+        if (width > expectImageWidth) {
+            width = expectImageWidth;
+            // 按原图片的比例进行缩放
+            height = (height * expectImageWidth) / width;
+        }
+    } else {
+        // 原图片的高度必然 > 宽度
+        if (height > expectImageHeight) {
+            height = expectImageHeight;
+            // 按原图片的比例进行缩放
+            width = (width * expectImageHeight) / height;
         }
     }
 
-    return { width, height };
+    console.log(`Redrawing image, Width: ${width}, Height: ${height}`);
+
+    const canvas = createCanvas(width, height);
+    const context = canvas.getContext('2d');
+    context.drawImage(svg, 0, 0, width, height);
+    return canvas.toDataURL('image/png');
 }
 
 async function convertImg(html: string): Promise<string> {
@@ -90,25 +87,7 @@ async function convertImg(html: string): Promise<string> {
     for (const img of doc.querySelectorAll('img')) {
         const imgFile = join(basePath, img.src);
 
-        const svg = await loadImage(imgFile);
-        console.log(`Width: ${svg.width}, Height: ${svg.height}`);
-
-        if (svg.width > targetWidth || svg.height > targetHeight) {
-            console.log('The image is out of bounds.');
-
-            const { width, height } = imgZoom(svg.width, svg.height);
-
-            console.log(`Redrawing image, Width: ${width}, Height: ${height}`);
-
-            const canvas = createCanvas(width, height);
-            const context = canvas.getContext('2d');
-            context.drawImage(svg, 0, 0, width, height);
-
-            img.src = canvas.toDataURL('image/png');
-        } else {
-            const imgBase64 = readFileSync(imgFile, { encoding: 'base64' });
-            img.src = `data:image/png;base64,${imgBase64}`;
-        }
+        img.src = await resize(imgFile);
     }
 
     return doc.body.innerHTML;
@@ -139,16 +118,16 @@ async function toWord(): Promise<Buffer> {
     const html = HTML_TEMPLATE.replace('{htmlContent}', htmlContent);
 
     return await word(html, null, {
-      table: { row: { cantSplit: true } },
+        table: { row: { cantSplit: true } },
     });
 }
 
 // 生成 docx 文件
 toWord().then((buff) => {
-    writeFileSync(join(outputPath, 'document.docx'), buff);
+    writeFileSync(join(outputPath, 'dist/document.docx'), buff);
 });
 
 // 生成 pdf 文件
 toPdf().then((buff) => {
-    writeFileSync(join(outputPath, 'document.pdf'), buff);
-})
+    writeFileSync(join(outputPath, 'dist/document.pdf'), buff);
+});
