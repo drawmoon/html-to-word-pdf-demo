@@ -5,7 +5,7 @@ import { loadImage, createCanvas } from 'canvas';
 import * as word from 'html-to-docx';
 import * as pdf from 'html-pdf-node';
 
-const basePath = process.cwd().replace('dist', '');
+const basePath = join(process.cwd().replace('dist', ''), 'assets');
 const outputPath = process.cwd();
 
 const HTML_TEMPLATE = `
@@ -54,20 +54,12 @@ async function resize(file: string): Promise<string> {
     let width = svg.width;
     let height = svg.height;
 
-    //原图片宽高比例 大于 指定的宽高比例，这就说明了原图片的宽度必然 > 高度
-    if (width / height >= expectImageWidth / expectImageHeight) {
-        if (width > expectImageWidth) {
-            width = expectImageWidth;
-            // 按原图片的比例进行缩放
-            height = (height * expectImageWidth) / width;
-        }
-    } else {
-        // 原图片的高度必然 > 宽度
-        if (height > expectImageHeight) {
-            height = expectImageHeight;
-            // 按原图片的比例进行缩放
-            width = (width * expectImageHeight) / height;
-        }
+    if (width > expectImageWidth) {
+        height = (height * expectImageWidth) / width;
+        width = expectImageWidth;
+    } else if (height > expectImageHeight) {
+        width = (width * expectImageHeight) / height;
+        height = expectImageHeight;
     }
 
     console.log(`Redrawing image, Width: ${width}, Height: ${height}`);
@@ -94,7 +86,7 @@ async function convertImg(html: string): Promise<string> {
 }
 
 async function readHtml(): Promise<string> {
-    let htmlStr = readFileSync(join(basePath, 'assets', 'content.html'), {
+    let htmlStr = readFileSync(join(basePath, 'index.html'), {
         encoding: 'utf-8',
     });
 
@@ -122,12 +114,12 @@ async function toWord(): Promise<Buffer> {
     });
 }
 
-// 生成 docx 文件
+// 保存 docx 文件
 toWord().then((buff) => {
     writeFileSync(join(outputPath, 'dist/document.docx'), buff);
 });
 
-// 生成 pdf 文件
+// 保存 pdf 文件
 toPdf().then((buff) => {
     writeFileSync(join(outputPath, 'dist/document.pdf'), buff);
 });
