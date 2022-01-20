@@ -10,33 +10,69 @@ const outputPath = process.cwd();
 
 const HTML_TEMPLATE = `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
   <title>Document</title>
   <style>
+    body {
+      -webkit-print-color-adjust: exact;
+    }
+    p {
+      display: block;
+      margin-left: 2em;
+    }
+    figure.table {
+      display: table;
+    }
     table {
-      min-height: 25px;
-      line-height: 25px;
-      text-align: center;
+      display: table;
+      text-indent: initial;
       border-collapse: collapse;
+      border-spacing: 0;
+      width: 100%;
+      height: 100%;
+      border: 1px double #b3b3b3;
     }
-    table,
-    table tr,
-    table tr th,
-    table tr td {
-      border: 1px solid #a8aeb2;
-      padding: 5px 10px;
+    table tr {
+      display: table-row;
+      vertical-align: inherit;
+      border-color: inherit;
     }
-    img {
-      max-width: 100%;
-      max-height: 100%;
+    table td,
+    table th {
+      min-width: 2em;
+      padding: .4em;
+      border: 1px solid #bfbfbf;
     }
     figure.image {
-      display: table;
-      clear: both;
+        display: table;
+    }
+    img {
+      display: table-caption;
+      margin: 0 auto;
+      max-width: 100%;
+      min-width: 100%;
+    }
+    figcaption {
+      display: table-caption;
+      word-break: break-word;
       text-align: center;
-      margin: 1em auto;
+      color: #333;
+      background-color: #f7f7f7;
+      padding: .6em;
+      font-size: .75em;
+      outline-offset: -1px;
+    }
+    .table figcaption {
+      caption-side: top;
+    }
+    .image figcaption {
+      caption-side: bottom;
+    }
+    .todo-list {
+      list-style: none;
+      margin-left: -1.5em;
     }
   </style>
 </head>
