@@ -85,6 +85,7 @@ const labelPattern = /<label[^>]*>/gm;
 const spanPattern = /(<span[^>]*(style="[^>]+")*[^>]*>\s*){2,}/gm;
 const spanEndPattern = /(<\/span>\s*){2,}/gm;
 const stylePattern = /style="(?<style>[^>]+)"/gm;
+const imgWithParagraphPattern = /<p>(<img[^>]*>)<\/p>/gm;
 
 interface ConvertOptions {
   expectWidth?: number | undefined;
@@ -141,6 +142,7 @@ async function readHtml(): Promise<string> {
   });
 
   // 处理两个及以上的 <span> 标签导致 <u> 标签渲染错误的问题
+  // TODO: https://github.com/privateOmega/html-to-docx/issues/115
   htmlStr = htmlStr.replace(spanPattern, (str) => {
     const styles = [];
 
@@ -155,6 +157,12 @@ async function readHtml(): Promise<string> {
     return styles.length === 0 ? '<span>': `<span style="${styles.join()}">`;
   });
   htmlStr = htmlStr.replace(spanEndPattern, '</span>');
+
+  // 处理 <img> 标签在 <p> 标签中无法渲染的问题
+  // TODO: https://github.com/privateOmega/html-to-docx/issues/41
+  htmlStr = htmlStr.replace(imgWithParagraphPattern, (_, img) => {
+    return img;
+  });
 
   // 将图片转换为 Base64
   htmlStr = await convertImg(htmlStr);
