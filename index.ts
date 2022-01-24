@@ -137,37 +137,6 @@ async function readHtml(): Promise<string> {
       encoding: 'utf-8',
   });
 
-  // 处理 <label> 标签无法渲染的问题
-  htmlStr = htmlStr.replace(labelPattern, (str) => {
-    return str.replace('label', 'p');
-  });
-  htmlStr = htmlStr.replace(labelEndPattern, '</p>');
-
-  // 处理两个及以上的 <span> 标签导致 <u> 标签渲染错误的问题
-  // TODO: https://github.com/privateOmega/html-to-docx/issues/115
-  htmlStr = htmlStr.replace(spanPattern, (str) => {
-    const styles = [];
-
-    let result;
-    do {
-      result = stylePattern.exec(str);
-      if (result) {
-        styles.push(result[1]);
-      }
-    } while (result);
-
-    return styles.length === 0 ? '<span>': `<span style="${styles.join('')}">`;
-  });
-  htmlStr = htmlStr.replace(spanEndPattern, '</span>');
-
-  // 处理 <img> 标签在 <p> 标签中无法渲染的问题
-  // TODO: https://github.com/privateOmega/html-to-docx/issues/41
-  htmlStr = htmlStr.replace(imgWithParagraphPattern, (_, img) => {
-    return img;
-  });
-
-  console.log(htmlStr);
-
   // 将图片转换为 Base64
   htmlStr = await convertImg(htmlStr);
 
@@ -185,7 +154,37 @@ async function toPdf(): Promise<Buffer> {
 }
 
 async function toWord(): Promise<Buffer> {
-  const htmlContent = await readHtml();
+  let htmlContent = await readHtml();
+
+  // 处理 <label> 标签无法渲染的问题
+  htmlContent = htmlContent.replace(labelPattern, (str) => {
+    return str.replace('label', 'p');
+  });
+  htmlContent = htmlContent.replace(labelEndPattern, '</p>');
+
+  // 处理两个及以上的 <span> 标签导致 <u> 标签渲染错误的问题
+  // TODO: https://github.com/privateOmega/html-to-docx/issues/115
+  htmlContent = htmlContent.replace(spanPattern, (str) => {
+    const styles = [];
+
+    let result;
+    do {
+      result = stylePattern.exec(str);
+      if (result) {
+        styles.push(result[1]);
+      }
+    } while (result);
+
+    return styles.length === 0 ? '<span>': `<span style="${styles.join('')}">`;
+  });
+  htmlContent = htmlContent.replace(spanEndPattern, '</span>');
+
+  // 处理 <img> 标签在 <p> 标签中无法渲染的问题
+  // TODO: https://github.com/privateOmega/html-to-docx/issues/41
+  htmlContent = htmlContent.replace(imgWithParagraphPattern, (_, img) => {
+    return img;
+  });
+
   const html = HTML_TEMPLATE.replace('{htmlContent}', htmlContent);
 
   return await word(html, null, {
