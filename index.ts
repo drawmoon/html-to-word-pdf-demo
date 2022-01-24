@@ -156,7 +156,7 @@ async function readHtml(): Promise<string> {
       }
     } while (result);
 
-    return styles.length === 0 ? '<span>': `<span style="${styles.join()}">`;
+    return styles.length === 0 ? '<span>': `<span style="${styles.join('')}">`;
   });
   htmlStr = htmlStr.replace(spanEndPattern, '</span>');
 
@@ -165,6 +165,8 @@ async function readHtml(): Promise<string> {
   htmlStr = htmlStr.replace(imgWithParagraphPattern, (_, img) => {
     return img;
   });
+
+  console.log(htmlStr);
 
   // 将图片转换为 Base64
   htmlStr = await convertImg(htmlStr);
