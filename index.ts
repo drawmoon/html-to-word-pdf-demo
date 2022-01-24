@@ -82,6 +82,7 @@ const HTML_TEMPLATE = `
 </html>`;
 
 const labelPattern = /<label[^>]*>/gm;
+const labelEndPattern = /<\/label>/gm;
 const spanPattern = /(<span[^>]*(style="[^>]+")*[^>]*>\s*){2,}/gm;
 const spanEndPattern = /(<\/span>\s*){2,}/gm;
 const stylePattern = /style="(?<style>[^>]+)"/gm;
@@ -140,6 +141,7 @@ async function readHtml(): Promise<string> {
   htmlStr = htmlStr.replace(labelPattern, (str) => {
     return str.replace('label', 'p');
   });
+  htmlStr = htmlStr.replace(labelEndPattern, '</p>');
 
   // 处理两个及以上的 <span> 标签导致 <u> 标签渲染错误的问题
   // TODO: https://github.com/privateOmega/html-to-docx/issues/115
