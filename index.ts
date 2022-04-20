@@ -2,7 +2,7 @@ import { join } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 import { JSDOM } from 'jsdom';
 import { loadImage, createCanvas } from 'canvas';
-import * as word from 'html-to-docx';
+import * as word from '@drawmoon/html-to-docx';
 import * as pdf from 'html-pdf-node';
 
 const basePath = join(process.cwd().replace('dist', ''), 'assets');
@@ -46,7 +46,7 @@ const HTML_TEMPLATE = `
       border: 1px solid #bfbfbf;
     }
     figure.image {
-        display: table;
+      display: table;
     }
     img {
       display: table-caption;
@@ -87,6 +87,8 @@ const spanPattern = /(<span[^>]*(style="[^>]+")*[^>]*>\s*){2,}/gm;
 const spanEndPattern = /(<\/span>\s*){2,}/gm;
 const stylePattern = /style="(?<style>[^>]+)"/gm;
 const imgWithParagraphPattern = /<p>(<img[^>]*>)<\/p>/gm;
+const figcaptionPattern = /<figcaption>/gm;
+const figcaptionEndPattern = /<\/figcaption>/gm;
 
 interface ConvertOptions {
   expectWidth?: number | undefined;
@@ -184,6 +186,10 @@ async function toWord(): Promise<Buffer> {
   htmlContent = htmlContent.replace(imgWithParagraphPattern, (_, img) => {
     return img;
   });
+
+  // 处理 <figcaption> 标签无法渲染的问题
+  htmlContent = htmlContent.replace(figcaptionPattern, '<span style="text-align:center;">');
+  htmlContent = htmlContent.replace(figcaptionEndPattern, '</span>');
 
   const html = HTML_TEMPLATE.replace('{htmlContent}', htmlContent);
 

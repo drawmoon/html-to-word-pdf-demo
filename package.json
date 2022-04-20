@@ -14,9 +14,9 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "canvas": "^2.8.0",
+    "@drawmoon/html-to-docx": "^1.4.1",
+    "canvas": "^2.6.1",
     "html-pdf-node": "^1.0.7",
-    "html-to-docx": "^1.2.4",
     "jsdom": "^16.5.3"
   }
 }
