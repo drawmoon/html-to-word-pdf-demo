@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@drawmoon/html-to-docx@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@drawmoon/html-to-docx/-/html-to-docx-1.4.1.tgz#237ddebc1c6ad037ed3f606d0c0fe05bc8da6d8e"
-  integrity sha512-o6EszqMLcwdDyLb13oanlaHwvky/5xu3atucTwDsuhUxLRgufuldBJU11brxyxyDJTWfOIephI4eRB9bG+AoPA==
+"@drawmoon/html-to-docx@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@drawmoon/html-to-docx/-/html-to-docx-1.5.0.tgz#702c1e0e2432caa648b896b788327557ab601e23"
+  integrity sha512-GLqJ8O1Np7jcvUbY2EUDUCKJPiJq/SikCmYXusKc0Su0e+2AodHLN7HpENarRpgP0O4cxnxaO8f5hIyOokkQLQ==
   dependencies:
     color-name "^1.1.4"
     escape-html "^1.0.3"
